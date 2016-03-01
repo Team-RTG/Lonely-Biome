@@ -43,7 +43,7 @@ public class LonelyBiome {
         instance = this;
         
         eventMgr = new EventManager();
-        MinecraftForge.EVENT_BUS.register(eventMgr);
+        MinecraftForge.TERRAIN_GEN_BUS.register(eventMgr);
         
         configPath = event.getModConfigurationDirectory() + "/";
         ConfigManager.init(configPath);
