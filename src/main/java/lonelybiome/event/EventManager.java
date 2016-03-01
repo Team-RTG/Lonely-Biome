@@ -18,8 +18,9 @@ public class EventManager
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onBiomeGenInit(WorldTypeEvent.InitBiomeGens event) {
         if (ConfigLB.singleBiomeId == -1) return;
-        GenLayer[] replacement = new GenLayer[1];
+        GenLayer[] replacement = new GenLayer[2];
         replacement[0] = new GenLayerConstant(ConfigLB.singleBiomeId);
+        replacement[1] = replacement[0];
         event.newBiomeGens = replacement;
     }
 }
