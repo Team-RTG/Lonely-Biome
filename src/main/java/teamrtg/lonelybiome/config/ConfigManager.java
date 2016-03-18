@@ -1,8 +1,8 @@
-package lonelybiome.config;
+package teamrtg.lonelybiome.config;
 
 import java.io.File;
 
-import lonelybiome.config.lonelybiome.ConfigLB;
+import teamrtg.lonelybiome.config.lonelybiome.ConfigLB;
 
 public class ConfigManager
 {

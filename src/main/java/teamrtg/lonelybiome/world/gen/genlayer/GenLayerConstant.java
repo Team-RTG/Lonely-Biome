@@ -1,5 +1,5 @@
 
-package lonelybiome.world.gen.genlayer;
+package teamrtg.lonelybiome.world.gen.genlayer;
 
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraft.world.gen.layer.IntCache;

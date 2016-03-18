@@ -1,7 +1,7 @@
-package lonelybiome.event;
+package teamrtg.lonelybiome.event;
 
-import lonelybiome.config.lonelybiome.ConfigLB;
-import lonelybiome.world.gen.genlayer.GenLayerConstant;
+import teamrtg.lonelybiome.config.lonelybiome.ConfigLB;
+import teamrtg.lonelybiome.world.gen.genlayer.GenLayerConstant;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraftforge.event.terraingen.WorldTypeEvent;
 import cpw.mods.fml.common.eventhandler.EventPriority;
