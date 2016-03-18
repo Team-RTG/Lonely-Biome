@@ -1,5 +1,5 @@
 
-package lonelybiome.util;
+package teamrtg.lonelybiome.util;
 
 import cpw.mods.fml.common.Loader;
 

@@ -1,11 +1,11 @@
-package lonelybiome;
+package teamrtg.lonelybiome;
 
 import java.util.ArrayList;
 
-import lonelybiome.config.ConfigManager;
-import lonelybiome.event.EventManager;
-import lonelybiome.proxy.CommonProxy;
-import lonelybiome.reference.ModInfo;
+import teamrtg.lonelybiome.config.ConfigManager;
+import teamrtg.lonelybiome.event.EventManager;
+import teamrtg.lonelybiome.proxy.CommonProxy;
+import teamrtg.lonelybiome.reference.ModInfo;
 import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;

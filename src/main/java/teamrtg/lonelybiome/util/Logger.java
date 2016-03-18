@@ -1,9 +1,8 @@
-package lonelybiome.util;
-
-import lonelybiome.config.lonelybiome.ConfigLB;
+package teamrtg.lonelybiome.util;
 
 import org.apache.logging.log4j.Level;
 
+import teamrtg.lonelybiome.config.lonelybiome.ConfigLB;
 import cpw.mods.fml.common.FMLLog;
 
 public class Logger {
