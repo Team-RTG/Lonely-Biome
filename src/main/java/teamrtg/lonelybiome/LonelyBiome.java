@@ -1,24 +1,17 @@
 package teamrtg.lonelybiome;
 
-import java.util.ArrayList;
-
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventHandler;
+import net.minecraftforge.fml.common.Mod.Instance;
+import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import teamrtg.lonelybiome.config.ConfigManager;
 import teamrtg.lonelybiome.event.EventManager;
 import teamrtg.lonelybiome.proxy.CommonProxy;
 import teamrtg.lonelybiome.reference.ModInfo;
-import net.minecraftforge.common.MinecraftForge;
-import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.Mod.EventHandler;
-import cpw.mods.fml.common.Mod.Instance;
-import cpw.mods.fml.common.SidedProxy;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.event.FMLServerStartedEvent;
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.common.event.FMLServerStoppedEvent;
-import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 
 @Mod(modid = ModInfo.MOD_ID, name = ModInfo.MOD_NAME, version = ModInfo.MOD_VERSION, acceptableRemoteVersions = "*")
 public class LonelyBiome {
@@ -58,44 +51,6 @@ public class LonelyBiome {
     @EventHandler
     public void fmlLifeCycle(FMLPostInitializationEvent event)
     {
-
-    }
-    
-    @EventHandler
-    public void fmlLifeCycle(FMLServerAboutToStartEvent event)
-    {
-
-    }
-    
-    @EventHandler
-    public void fmlLifeCycle(FMLServerStartingEvent event)
-    {
-
-    }
-    
-    @EventHandler
-    public void fmlLifeCycle(FMLServerStartedEvent event)
-    {
-
-    }
-
-    @EventHandler
-    public void fmlLifeCycle(FMLServerStoppingEvent event)
-    {
-
-    }
-
-    public void runOnServerClose(Runnable action) {
-        serverCloseActions.add(action);
-    }
-    
-    private ArrayList<Runnable> serverCloseActions = new ArrayList<Runnable>();
-    @EventHandler
-    public void fmlLifeCycle(FMLServerStoppedEvent event)
-    {
-        for (Runnable action: serverCloseActions) {
-            action.run();
-        }
 
     }
 }

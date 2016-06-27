@@ -1,11 +1,11 @@
 package teamrtg.lonelybiome.event;
 
-import teamrtg.lonelybiome.config.lonelybiome.ConfigLB;
-import teamrtg.lonelybiome.world.gen.genlayer.GenLayerConstant;
 import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraftforge.event.terraingen.WorldTypeEvent;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import teamrtg.lonelybiome.config.lonelybiome.ConfigLB;
+import teamrtg.lonelybiome.world.gen.genlayer.GenLayerConstant;
 
 public class EventManager
 {

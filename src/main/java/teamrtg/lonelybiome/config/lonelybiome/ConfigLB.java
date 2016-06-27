@@ -2,8 +2,8 @@ package teamrtg.lonelybiome.config.lonelybiome;
 
 import java.io.File;
 
-import teamrtg.lonelybiome.util.Logger;
 import net.minecraftforge.common.config.Configuration;
+import teamrtg.lonelybiome.util.Logger;
 
 public class ConfigLB
 {
