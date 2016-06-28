@@ -21,6 +21,6 @@ public class EventManager
         GenLayer[] replacement = new GenLayer[2];
         replacement[0] = new GenLayerConstant(ConfigLB.singleBiomeId);
         replacement[1] = replacement[0];
-        event.newBiomeGens = replacement;
+        event.setNewBiomeGens(replacement);
     }
 }

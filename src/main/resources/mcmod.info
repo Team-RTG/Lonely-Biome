@@ -5,14 +5,14 @@
     "description": "Minecraft mod that allows you generate single-biome worlds.",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "url": "https://github.com/Team-RTG/Lonely-Biome",
+    "url": "https://github.com/Team-RTG/1.9-Lonely-Biome",
     "updateUrl": "",
     "authorList": [ "Zeno410", "WhichOnesPink" ],
     "credits": "Halloween graphic by Freepik",
     "logoFile": "assets/lonelybiome/logo.png",
     "screenshots": [],
     "parent": "",
-    "requiredMods": [ "Forge@[10.13.4.1448,)" ],
+    "requiredMods": [],
     "dependencies": [
 
     ],

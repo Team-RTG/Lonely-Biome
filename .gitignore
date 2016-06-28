@@ -1,32 +1,38 @@
 # eclipse
+bin
 *.launch
 .settings
 .metadata
 .classpath
 .project
-bin
-eclipse
 
 # idea
+out
 *.ipr
 *.iws
 *.iml
 .idea
-out
 
 # gradle
 build
 .gradle
+
+# other
+eclipse
 run
 
-# other (srsly, do you need this stuff here? Add it to your IDE's ignore list! :)
+README.txt
+Paulscode IBXM Library License.txt
+Paulscode SoundSystem CodecIBXM License.txt
+MinecraftForge-Credits.txt
+MinecraftForge-License.txt
+LICENSE-fml.txt
 gradlew-setupDecompWorkspace.bat
+gradlew-setupDecompWorkspace-refresh-deps.bat
+gradlew-jar.bat
+forge-1.9-12.16.0.1811-1.9-changelog.txt
+gradlew-build.bat
+gradlew-cleanCache.bat
 gradlew-clean.bat
 gradlew-eclipse.bat
-gradlew-build.bat
-libs/*.jar
-gradlew-jar.bat
-gradlew-cleanCache.bat
-gradlew-setupDecompWorkspace-refresh-deps.bat
-gradlew-idea.bat
-/gradlew-runClient.bat
+CREDITS-fml.txt
