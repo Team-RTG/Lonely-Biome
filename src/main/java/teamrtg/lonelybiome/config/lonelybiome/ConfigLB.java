@@ -30,8 +30,6 @@ public class ConfigLB
         		"Set to -1 to generate the world normally." +
                 Configuration.NEW_LINE +
                 "Vanilla biome IDs can be found here: http://goo.gl/WqlAfV" +
-                Configuration.NEW_LINE +
-                "For modded biome IDs, use NEI and go [Options] > [Tools] > [Data Dumps] > Biomes > [Dump], and then refer to the 'biome.csv' file which can be found in your '/.minecraft/dumps' folder." +
                 Configuration.NEW_LINE
             );
             
