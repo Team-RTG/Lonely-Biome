@@ -26,7 +26,7 @@ ext.ref = parseprops(file('build.properties'))
 ext.ref.mod_deps = parseprops(file('mod_deps.properties'))
 
 group = ref.package_base + '.' + ref.mod_id
-archivesBaseName = 'LonelyBiome-' + (ref.mc_version as String)
+archivesBaseName = 'Lonely-Biome-' + (ref.mc_version as String)
 version = ref.mod_version
 
 //repositories {
