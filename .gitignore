@@ -1,24 +1,38 @@
-# eclipse
-*.launch
-.settings
-.metadata
-.classpath
-.project
-bin
-eclipse
+# Ignore everything...
 
-# idea
-*.ipr
-*.iws
-*.iml
-.idea
-out
+/*
 
-# gradle
-build
-.gradle
-run
+# Except...
 
-libs/*.jar
-gradlew-*.bat
-.DS_Store
+# Repo files
+!.github/
+!.gitattributes
+!.gitignore
+!.gitmodules
+
+# Project files
+!src/
+!docs/
+!LICENSE/
+!LICENSE.*
+!README*
+
+# Third-party libraries
+!lib/
+
+# Gradle
+!gradle/
+!gradlew
+!gradlew.bat
+!?*.gradle
+!*.properties
+!gradle.*
+!build.*
+
+# Integrations
+!codeformat/
+!.travis.yml
+
+# Other
+!publish/
+publish/releases/*changelog*

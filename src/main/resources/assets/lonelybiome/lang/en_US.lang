@@ -1,0 +1,5 @@
+lonelybiome.config.maintitle=LonelyBiome Configuration
+lonelybiome.config.biome=Biome
+lonelybiome.config.biome.comment=The Biome to generate the world with.
+lonelybiome.config.enabled=Enabled
+lonelybiome.config.enabled.comment=Set this to false to disable LonelyBiome.

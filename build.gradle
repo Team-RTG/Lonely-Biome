@@ -1,10 +1,7 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
+        maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
@@ -14,78 +11,32 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 sourceCompatibility = targetCompatibility = 1.8
 
-def parseprops(File cfg) {
-    cfg.withReader {
-        def prop = new Properties()
-        prop.load(it)
-        return (new ConfigSlurper().parse(prop))
-    }
-}
-
-ext.ref = parseprops(file('build.properties'))
-ext.ref.mod_deps = parseprops(file('mod_deps.properties'))
-
-group = ref.package_base + '.' + ref.mod_id
-archivesBaseName = 'Lonely-Biome-' + (ref.mc_version as String)
-version = ref.mod_version
-
-//repositories {
-//    maven { url "http://files.minecraftforge.net/maven" } //BiomesOPlenty
-//    maven { url 'https://dl.bintray.com/shinoow/maven/' } //AbyssalCraft
-//}
-
-dependencies {
-    provided fileTree(dir: 'libs', include: '*.jar')
-}
+group = project.package_base
+archivesBaseName = project.name + "-" + (project.mc_version as String)
+version = project.mod_version
 
 minecraft {
-    version = (ref.mcf_suffix!='') ? ref.mcf_version + '-' + ref.mcf_suffix : ref.mcf_version
-    mappings = ref.mcp_mappings
-    runDir = ref.run_dir
+    version = project.mcf_version
+    mappings = project.mcp_mappings
     makeObfSourceJar = false
-    replace '@MOD_VERSION@',    project.version
-    replace '0.0-MCF+MINVER',     ref.mcf_minver
-    replace '9001.0-MCF+MAXVER',     ref.mcf_maxver
-    if (ref.mod_deps!="") replace ';after:MODDEPS', ";" + (ref.mod_deps.depstring as String)
-    else replace ';after:MODDEPS', ''
-    replaceIn 'ModInfo.java'
+    setRunDir "run"
+    replace '@MOD_VERSION@',     project.version
+    replace '0.0-MCF+MINVER',    project.mcf_minver
+    replace '9001.0-MCF+MAXVER', project.mcf_maxver
+    replace ';after:MODDEPS',    (!project.hasProperty("mod_depstring")) ? "" : project.mod_depstring
+    replaceIn 'LonelyBiome.java'
 }
 
 processResources {
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-		expand ([
-			'modid':ref.mod_id,
-			'name':ref.mod_name,
-			'description':ref.mod_desc,
-			'version':ref.mod_version,
-			'mcversion':ref.mc_version,
-			'url':ref.mod_url,
-			'authorList':ref.mod_author,
-			'credits':ref.mod_creds,
-			'logoFile':ref.mod_logo,
-		])
-	}
-	from(sourceSets.main.resources.srcDirs) {exclude 'mcmod.info'}
-}
-
-sourceJar {classifier = 'src'}
-
-// For a debugging session used 'gradle -DEBUG [runClient|runServer]'
-allprojects {
-    tasks.withType(JavaExec) {
-// disabled to possibly alleviate testing issues on cumputers with low memory
-//      jvmArgs '-Xms2G', '-Xmx4G'
-        if (System.getProperty("EBUG")!=null)
-            jvmArgs '-agentlib:jdwp=transport=dt_socket,address=localhost:5005,server=y,suspend=y'
+        expand ([
+            'modid':project.mod_id,
+            'name':project.mod_name,
+            'version':project.mod_version,
+            'mcversion':project.mc_version,
+        ])
     }
+    from(sourceSets.main.resources.srcDirs) {exclude 'mcmod.info'}
 }
 
-// use -Dwarn|-Dwarnall CLI arguement for verbose compiler warnings
-// -Dwarn covers the 3 most common warnings only
-tasks.withType(JavaCompile) {
-    if (System.getProperty("warn") != null)
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:rawtypes" << "-Xlint:deprecation"
-    if (System.getProperty("warnall") != null)
-        options.compilerArgs << "-Xlint:all"
-}

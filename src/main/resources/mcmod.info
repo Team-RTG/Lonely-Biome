@@ -1,14 +1,12 @@
 [{
   "modid": "${modid}",
   "name": "${name}",
-  "description": "${description}",
+  "description": "A Minecraft mod that allows you generate single-biome worlds.",
   "version": "${version}",
   "mcversion": "${mcversion}",
-  "url": "${url}",
+  "url": "https://github.com/Team-RTG/Lonely-Biome",
   "updateUrl": "",
-  "authorList": [${authorList}],
-  "credits": "${credits}",
-  "logoFile": "${logoFile}",
-  "screenshots": [],
-  "dependencies": []
+  "authorList": ["Team RTG"],
+  "credits": "Halloween graphic by Freepik",
+  "logoFile": "assets/lonelybiome/logo.png"
 }]
