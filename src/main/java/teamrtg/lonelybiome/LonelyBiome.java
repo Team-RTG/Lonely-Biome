@@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
     name = LonelyBiome.MOD_NAME,
     version = LonelyBiome.MOD_VERSION,
     guiFactory = "teamrtg.lonelybiome.LonelyBiome$LBGuiConfigFactory",
-    dependencies = "required-after:Forge@[" + LonelyBiome.MCF_MINVER + "," + LonelyBiome.MCF_MAXVER + ")" + LonelyBiome.MOD_DEPS,
+    dependencies = "required-after:forge@[" + LonelyBiome.MCF_MINVER + "," + LonelyBiome.MCF_MAXVER + ")" + LonelyBiome.MOD_DEPS,
     acceptableRemoteVersions = "*"
 )
 public final class LonelyBiome
@@ -143,7 +143,7 @@ public final class LonelyBiome
     }
     @SideOnly(Side.CLIENT)
     public  static final class LBGuiConfig extends GuiConfig {
-        public LBGuiConfig(GuiScreen parent) { super(parent, getConfigElements(), MOD_ID, false, false, I18n.format(LonelyBiome.MOD_ID+".config.maintitle")); }
+        LBGuiConfig(GuiScreen parent) { super(parent, getConfigElements(), MOD_ID, false, false, I18n.format(LonelyBiome.MOD_ID+".config.maintitle")); }
         private static List<IConfigElement> getConfigElements() {
             List<IConfigElement> ret = Lists.newArrayList();
             LBconfig.config.getCategory(MOD_ID).values().forEach(e -> {
@@ -161,6 +161,8 @@ public final class LonelyBiome
     @SideOnly(Side.CLIENT)
     public  static final class LBGuiConfigFactory implements IModGuiFactory {
         @Override public void initialize(Minecraft mc) {}
+        @Override public boolean hasConfigGui() { return true; }
+        @Override public GuiScreen createConfigGui(GuiScreen parentScreen) { return new LBGuiConfig(parentScreen); }
         @Override public Class<? extends GuiScreen> mainConfigGuiClass() { return LBGuiConfig.class; }
         @Override public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() { return null; }
         @SuppressWarnings("deprecation")
