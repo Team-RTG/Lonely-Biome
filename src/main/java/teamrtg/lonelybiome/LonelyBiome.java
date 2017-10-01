@@ -72,7 +72,7 @@ public final class LonelyBiome
             if (LBconfig.isEnabled()) {
                 GenLayer layer = new GenLayerSingle(LBconfig.biome);
                 event.setNewBiomeGens(new GenLayer[]{layer,layer});
-                LOGGER.info("Setting up new single-biome GenLayer using Biome: {}, with Id: {}, Registry name: {}", LBconfig.biome.getBiomeName(), LBconfig.biomeId, LBconfig.resLoc);
+                LOGGER.info("Setting up new single-biome GenLayer using Biome: {}, with Id: {}", LBconfig.resLoc, LBconfig.biomeId);
             }
         }
     }
@@ -92,7 +92,7 @@ public final class LonelyBiome
         GenLayerSingle(@Nonnull Biome biome) {
             super(0L);
             this.biomeId = Biome.getIdForBiome(biome);
-            LOGGER.debug("Created new GenLayerSingle for Biome: {}, with Id: {}, Registry name: {} ", biome.getBiomeName(), biomeId, biome.getRegistryName());
+            LOGGER.debug("Created new GenLayerSingle for Biome: {}, with Id: {}", LBconfig.resLoc, biomeId);
         }
         @Override @Nonnull
         public int[] getInts(int areaX, int areaY, int areaWidth, int areaHeight) {
@@ -136,7 +136,7 @@ public final class LonelyBiome
             biomeId = Biome.getIdForBiome(biome);
             resLoc = biome.getRegistryName();
 
-            LOGGER.info("LonelyBiome configured with Biome: {}, Id: {}, Registry name: {}", biome.getBiomeName(), biomeId, resLoc);
+            LOGGER.info("LonelyBiome configured with Biome: {}, Id: {}", resLoc, biomeId);
 
             if (config.hasChanged()) { config.save(); }
         }
@@ -163,9 +163,6 @@ public final class LonelyBiome
         @Override public void initialize(Minecraft mc) {}
         @Override public boolean hasConfigGui() { return true; }
         @Override public GuiScreen createConfigGui(GuiScreen parentScreen) { return new LBGuiConfig(parentScreen); }
-        @Override public Class<? extends GuiScreen> mainConfigGuiClass() { return LBGuiConfig.class; }
         @Override public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() { return null; }
-        @SuppressWarnings("deprecation")
-        @Override public RuntimeOptionGuiHandler getHandlerFor(RuntimeOptionCategoryElement element) { return null; }
     }
 }
