@@ -30,6 +30,8 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,7 +72,7 @@ public final class LonelyBiome
             if (LBconfig.isEnabled()) {
                 GenLayer layer = new GenLayerSingle(LBconfig.biome);
                 event.setNewBiomeGens(new GenLayer[]{layer,layer});
-                LOGGER.info("Setting up new single-biome GenLayer using Biome: {}, with Id: {}, Registry name: {}", LBconfig.biome, LBconfig.biomeId, LBconfig.resLoc);
+                LOGGER.info("Setting up new single-biome GenLayer using Biome: {}, with Id: {}, Registry name: {}", LBconfig.biome.getBiomeName(), LBconfig.biomeId, LBconfig.resLoc);
             }
         }
     }
@@ -139,6 +141,7 @@ public final class LonelyBiome
             if (config.hasChanged()) { config.save(); }
         }
     }
+    @SideOnly(Side.CLIENT)
     public  static final class LBGuiConfig extends GuiConfig {
         public LBGuiConfig(GuiScreen parent) { super(parent, getConfigElements(), MOD_ID, false, false, I18n.format(LonelyBiome.MOD_ID+".config.maintitle")); }
         private static List<IConfigElement> getConfigElements() {
@@ -155,6 +158,7 @@ public final class LonelyBiome
             LBconfig.sync();
         }
     }
+    @SideOnly(Side.CLIENT)
     public  static final class LBGuiConfigFactory implements IModGuiFactory {
         @Override public void initialize(Minecraft mc) {}
         @Override public Class<? extends GuiScreen> mainConfigGuiClass() { return LBGuiConfig.class; }
