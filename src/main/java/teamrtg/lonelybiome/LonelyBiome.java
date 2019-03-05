@@ -35,24 +35,18 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@SuppressWarnings("unused")
+
 @Mod(
-    modid = LonelyBiome.MOD_ID,
-    name = LonelyBiome.MOD_NAME,
-    version = LonelyBiome.MOD_VERSION,
-    guiFactory = "teamrtg.lonelybiome.LonelyBiome$LBGuiConfigFactory",
-    dependencies = "required-after:forge@[" + LonelyBiome.MCF_MINVER + "," + LonelyBiome.MCF_MAXVER + ")" + LonelyBiome.MOD_DEPS,
+    modid        = LonelyBiome.MOD_ID,
+    name         = "Lonely Biome",
+    version      = "@MOD_VERSION@",
+    dependencies = "required-after:forge@[@MCF_MINVER@,);after:biomesoplenty@[@BOP_VERSION@,);",
+    guiFactory   = "teamrtg.lonelybiome.LBConfig$LBGuiConfigFactory",
     acceptableRemoteVersions = "*"
 )
 public final class LonelyBiome
 {
-            static final String MOD_ID      = "lonelybiome";
-            static final String MOD_NAME    = "Lonely Biome";
-            static final String MOD_VERSION = "@MOD_VERSION@";
-            static final String MCF_MINVER  = "0.0-MCF+MINVER";
-            static final String MCF_MAXVER  = "9001.0-MCF+MAXVER";
-            static final String MOD_DEPS    = ";after:MODDEPS";
-    private static final Logger LOGGER      = LogManager.getLogger(MOD_ID);
+    static final String MOD_ID = "lonelybiome";
 
     @Mod.Instance(MOD_ID) private static LonelyBiome instance;
     @Mod.EventHandler void initPre (FMLPreInitializationEvent  event) { proxy.preInit (event); }

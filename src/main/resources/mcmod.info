@@ -1,6 +1,6 @@
 [{
-  "modid": "${modid}",
-  "name": "${name}",
+  "modid": "lonelybiome",
+  "name": "Lonely Biome",
   "description": "A Minecraft mod that allows you generate single-biome worlds.",
   "version": "${version}",
   "mcversion": "${mcversion}",

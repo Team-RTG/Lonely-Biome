@@ -1,42 +1,55 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
+        maven { url = "https://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
+plugins {
+    id "org.ajoberstar.reckon" version "0.9.0"
+}
+apply plugin: "net.minecraftforge.gradle.forge"
 
 sourceCompatibility = targetCompatibility = 1.8
 
-group = project.package_base
-archivesBaseName = project.name + "-" + (project.mc_version as String)
-version = project.mod_version
+group = "org.teamrtg"
+archivesBaseName = "${project.name}-${project.mc_version}"
+
+reckon {
+    scopeFromProp()
+    stageFromProp("alpha", "beta", "final")
+}
+
+repositories {
+    maven {
+        name = "BoP"
+        url = "https://files.minecraftforge.net/maven"
+    }
+}
+
+dependencies {
+    provided "com.github.glitchfiend.biomesoplenty:BiomesOPlenty:${project.mc_version}-${project.bop_version}:deobf"
+}
 
 minecraft {
-    version = project.mcf_version
+    version = "${project.mc_version}-${project.mcf_version}"
     mappings = project.mcp_mappings
     makeObfSourceJar = false
     setRunDir "run"
-    replace '@MOD_VERSION@',     project.version
-    replace '0.0-MCF+MINVER',    project.mcf_minver
-    replace '9001.0-MCF+MAXVER', project.mcf_maxver
-    replace ';after:MODDEPS',    (!project.hasProperty("mod_depstring")) ? "" : project.mod_depstring
-    replaceIn 'LonelyBiome.java'
+    replace "@MOD_VERSION@", project.version as String
+    replace "@MCF_MINVER@",  project.mcf_minver
+    replace "@BOP_VERSION@",  project.bop_version
+    replaceIn "LonelyBiome.java"
 }
 
 processResources {
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-        expand ([
-            'modid':project.mod_id,
-            'name':project.mod_name,
-            'version':project.mod_version,
-            'mcversion':project.mc_version,
-        ])
+        include "mcmod.info"
+        expand (["version":project.version as String, "mcversion":project.mc_version])
     }
-    from(sourceSets.main.resources.srcDirs) {exclude 'mcmod.info'}
+    from(sourceSets.main.resources.srcDirs) {exclude "mcmod.info"}
 }
 
+jar.manifest.attributes "Maven-Artifact": "${project.group}:${archivesBaseName}:${project.version}"
