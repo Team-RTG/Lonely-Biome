@@ -1,39 +1,26 @@
 package teamrtg.lonelybiome;
 
-import javax.annotation.Nonnull;
-import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.init.Biomes;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.layer.GenLayer;
-import net.minecraft.world.gen.layer.IntCache;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.config.ConfigElement;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
-import net.minecraftforge.event.terraingen.WorldTypeEvent;
-import net.minecraftforge.fml.client.IModGuiFactory;
-import net.minecraftforge.fml.client.config.GuiConfig;
-import net.minecraftforge.fml.client.config.IConfigElement;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldType;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.biome.BiomeProviderSingle;
+import net.minecraft.world.gen.structure.MapGenVillage;
+import net.minecraftforge.common.BiomeManager;
+import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.fml.common.Loader;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 
 @Mod(
@@ -48,115 +35,149 @@ public final class LonelyBiome
 {
     static final String MOD_ID = "lonelybiome";
 
-    @Mod.Instance(MOD_ID) private static LonelyBiome instance;
-    @Mod.EventHandler void initPre (FMLPreInitializationEvent  event) { proxy.preInit (event); }
-    @Mod.EventHandler void init    (FMLInitializationEvent     event) { proxy.init    (event); }
-    @Mod.EventHandler void postInit(FMLPostInitializationEvent event) { proxy.postInit(event); }
+    private static final String BOP_MOD_ID = "biomesoplenty";
 
-    @SidedProxy private static CommonProxy proxy;
-    private static abstract class CommonProxy {
-        void preInit(FMLPreInitializationEvent event) {
-            LBconfig.init(event);
-            LOGGER.debug("Registering InitBiomeGens event handler");
-            MinecraftForge.TERRAIN_GEN_BUS.register(this);
+    @Mod.EventHandler
+    void initPre(final FMLPreInitializationEvent event)
+    {
+        LBConfig.init(event);
+    }
+
+    @Mod.EventBusSubscriber
+    public static final class EventHandler
+    {
+        private static final Logger          LOGGER         = LogManager.getLogger(MOD_ID + "/EventHandler");
+        private static final String          PROVIDER_FIELD = "field_76578_c";
+        private static final List<WorldType> BOP_WORLDTYPES = Lists.newArrayList();
+
+        private static boolean resetStronghold = false;
+        private static boolean resetVillage    = false;
+
+        private EventHandler() {}
+
+        @SubscribeEvent
+        public static void onCreateSpawn(final WorldEvent.CreateSpawnPosition event)
+        {
+            // Do this on Overworld creation no matter what. If not done during spawn point creation
+            // then an erroneous chunk will be created by the world at the spawn location.
+            final World world = event.getWorld();
+            if (verifyWorld(world)) { handleWorldLoad(world); }
         }
-        void init(FMLInitializationEvent event) { }
-        void postInit(FMLPostInitializationEvent event) { LBconfig.sync(); }
-        @SubscribeEvent void onInitBiomeGens(WorldTypeEvent.InitBiomeGens event) {
-            if (LBconfig.isEnabled()) {
-                GenLayer layer = new GenLayerSingle(LBconfig.biome);
-                event.setNewBiomeGens(new GenLayer[]{layer,layer});
-                LOGGER.info("Setting up new single-biome GenLayer using Biome: {}, with Id: {}", LBconfig.resLoc, LBconfig.biomeId);
+
+        @SubscribeEvent
+        public static void onWorldLoad(final WorldEvent.Load event)
+        {
+            // Only do this if the world is already created (world.getTotalWorldTime() > 0).
+            // For new worlds, this needs to be called from WorldEvent.CreateSpawnPosition
+            final World world = event.getWorld();
+            if (verifyWorld(world) && world.getTotalWorldTime() > 0) { handleWorldLoad(world); }
+        }
+
+        @SubscribeEvent
+        public static void onWorldUnload(final WorldEvent.Unload event)
+        {
+            final World world = event.getWorld();
+            if (verifyWorld(world)) {
+                LBSaveData data = LBSaveData.getSaveData(world);
+                final Biome biome;
+                if (data != null && (biome = data.getBiome()) != null) {
+                    // If village/stronghold generation is not default for this biome, then reset it.
+                    resetBiome(biome);
+                }
+
+                // Reset the Biomes O' Plenty decoration blacklist back to default when the world is unloaded.
+                if (Loader.isModLoaded(BOP_MOD_ID)) {
+                    biomesoplenty.api.biome.BOPBiomes.excludedDecoratedWorldTypes.clear();
+                    biomesoplenty.api.biome.BOPBiomes.excludedDecoratedWorldTypes.addAll(BOP_WORLDTYPES);
+                    LOGGER.debug("Reset the Biomes O' Plenty world type decoration blacklist.");
+                }
             }
         }
-    }
-    public  static class ClientProxy extends CommonProxy {
-        @Override public void preInit (FMLPreInitializationEvent  event) { super.preInit (event); }
-        @Override public void init    (FMLInitializationEvent     event) { super.init    (event); }
-        @Override public void postInit(FMLPostInitializationEvent event) { super.postInit(event); }
-    }
-    public  static class ServerProxy extends CommonProxy {
-        @Override public void preInit (FMLPreInitializationEvent  event) { super.preInit (event); }
-        @Override public void init    (FMLInitializationEvent     event) { super.init    (event); }
-        @Override public void postInit(FMLPostInitializationEvent event) { super.postInit(event); }
-    }
 
-    private static final class GenLayerSingle extends GenLayer {
-        private final int biomeId;
-        GenLayerSingle(@Nonnull Biome biome) {
-            super(0L);
-            this.biomeId = Biome.getIdForBiome(biome);
-            LOGGER.debug("Created new GenLayerSingle for Biome: {}, with Id: {}", LBconfig.resLoc, biomeId);
-        }
-        @Override @Nonnull
-        public int[] getInts(int areaX, int areaY, int areaWidth, int areaHeight) {
-            int[] ids = IntCache.getIntCache(areaWidth * areaHeight);
-            Arrays.fill(ids, biomeId);
-            return ids;
-        }
-    }
-
-    private static final class LBconfig {
-        private LBconfig() {}
-        private static final Biome      DEFAULT_BIOME = Biomes.PLAINS;
-        private static final int        DEFAULT_BIOME_ID = Biome.getIdForBiome(Biomes.PLAINS);
-        private static Biome            biome;
-        private static int              biomeId;
-        private static ResourceLocation resLoc;
-        private static File             configFile;
-        private static Configuration    config;
-        private static Property         configBiome;
-        private static Property         enabled;
-        private static boolean          isEnabled() { return enabled.getBoolean(); }
-        private static void init(FMLPreInitializationEvent event) {
-            if (configFile == null) { configFile = event.getSuggestedConfigurationFile(); }
-            if (config == null) { config = new Configuration(configFile); }
-            configBiome = config.get(LonelyBiome.MOD_ID, "biome", "minecraft:plains", "The biome to generate the world with." + Configuration.NEW_LINE +
-                "Enter the Registry name for a biome (eg. minecraft:plains), or a numeric Biome Id." + Configuration.NEW_LINE + "A Registry name is more " +
-                "reliable as biome IDs can change with different configurations.").setLanguageKey(LonelyBiome.MOD_ID+".config.biome");
-            enabled = config.get(LonelyBiome.MOD_ID, "enabled", true, "Set this to false to disable LonelyBiome.").setLanguageKey(LonelyBiome.MOD_ID + ".config.enabled");
-            if (config.hasChanged()) { config.save(); }
-        }
-        private static void sync() {
-            if (configBiome.getString().contains(":")) {
-                resLoc = new ResourceLocation(configBiome.getString());
-                biome = Biome.REGISTRY.getObject(resLoc);
-                if (biome == null) { biome = DEFAULT_BIOME; }
+        private static void handleWorldLoad(final World world)
+        {
+            Biome biome = null;
+            LBSaveData data = LBSaveData.getSaveData(world);
+            if (data != null) {
+                LOGGER.debug("Found LonelyBiome save data.");
+                biome = data.getBiome();
+            } else {
+                if (world.getTotalWorldTime() == 0) {
+                    LOGGER.debug("LonelyBiome save data not found and world is new. Creating new save data.");
+                    biome = LBSaveData.initNewSaveData(world).getBiome();
+                } else {
+                    LOGGER.warn("LonelyBiome save data not found and world is old. No changes made.");
+                }
             }
-            else {
-                biomeId = MathHelper.getInt(configBiome.getString(), DEFAULT_BIOME_ID);
-                biome = Biome.getBiome(biomeId, DEFAULT_BIOME);
+
+            if (biome != null) {
+                final ResourceLocation resloc = biome.getRegistryName();
+
+                // special case for BoP, so its biomes will decorate, because it is such a unique snowflake.
+                if (Loader.isModLoaded(BOP_MOD_ID)) {
+                    if (resloc != null && resloc.getNamespace().equals(BOP_MOD_ID)) {
+                        final WorldType worldType = world.getWorldType();
+                        final List<WorldType> bopWorldTypes = biomesoplenty.api.biome.BOPBiomes.excludedDecoratedWorldTypes;
+                        if (bopWorldTypes.contains(worldType)) {
+                            BOP_WORLDTYPES.clear();
+                            BOP_WORLDTYPES.addAll(bopWorldTypes);
+                            bopWorldTypes.remove(worldType);
+                            LOGGER.debug("Removed current world type from Biomes O' Plenty decoration blacklist: {}", worldType.getName());
+                        }
+                    }
+                }
+
+                // Check and maybe set if villages or strongholds should generate.
+                configBiome(biome);
+
+                // Replace the Overworld BiomeProvider with an instance of BiomeProviderSingle using our biome
+                LOGGER.info("Replacing the BiomeProvider of the Overworld with BiomeProviderSingle using: {}", resloc);
+                ObfuscationReflectionHelper.setPrivateValue(WorldProvider.class, world.provider, createBiomeProvider(biome), PROVIDER_FIELD);
             }
-            biomeId = Biome.getIdForBiome(biome);
-            resLoc = biome.getRegistryName();
-
-            LOGGER.info("LonelyBiome configured with Biome: {}, Id: {}", resLoc, biomeId);
-
-            if (config.hasChanged()) { config.save(); }
         }
-    }
-    @SideOnly(Side.CLIENT)
-    public  static final class LBGuiConfig extends GuiConfig {
-        LBGuiConfig(GuiScreen parent) { super(parent, getConfigElements(), MOD_ID, false, false, I18n.format(LonelyBiome.MOD_ID+".config.maintitle")); }
-        private static List<IConfigElement> getConfigElements() {
-            List<IConfigElement> ret = Lists.newArrayList();
-            LBconfig.config.getCategory(MOD_ID).values().forEach(e -> {
-                e.setComment(I18n.format(e.getLanguageKey()+".comment"));
-                ret.add(new ConfigElement(e));
-            });
+
+        private static boolean verifyWorld(final World world)
+        {
+            return !world.isRemote && world.provider.getDimension() == 0;
+        }
+
+        private static BiomeProvider createBiomeProvider(final Biome biome)
+        {
+            final List<Biome> original = BiomeProvider.allowedBiomes;
+            BiomeProvider.allowedBiomes = Collections.singletonList(biome);
+            final BiomeProvider ret = new BiomeProviderSingle(biome);
+            BiomeProvider.allowedBiomes = original;
             return ret;
         }
-        @Override public void onGuiClosed() {
-            super.onGuiClosed();
-            if (LBconfig.config.hasChanged()) { LBconfig.config.save(); }
-            LBconfig.sync();
+
+        private static void configBiome(final Biome biome)
+        {
+            if (LBConfig.getEnsureStrongholds() && !BiomeManager.strongHoldBiomes.contains(biome)) {
+                resetStronghold = true;
+                BiomeManager.addStrongholdBiome(biome);
+                LOGGER.debug("Added {} to stronghold generation", biome.getRegistryName());
+            }
+
+            if (LBConfig.getEnsureVillages() && !MapGenVillage.VILLAGE_SPAWN_BIOMES.contains(biome)) {
+                resetVillage = true;
+                BiomeManager.addVillageBiome(biome, true);
+                LOGGER.debug("Added {} to village generation", biome.getRegistryName());
+            }
         }
-    }
-    @SideOnly(Side.CLIENT)
-    public  static final class LBGuiConfigFactory implements IModGuiFactory {
-        @Override public void initialize(Minecraft mc) {}
-        @Override public boolean hasConfigGui() { return true; }
-        @Override public GuiScreen createConfigGui(GuiScreen parentScreen) { return new LBGuiConfig(parentScreen); }
-        @Override public Set<RuntimeOptionCategoryElement> runtimeGuiCategories() { return null; }
+
+        private static void resetBiome(final Biome biome)
+        {
+            if (resetStronghold) {
+                resetStronghold = false;
+                BiomeManager.removeStrongholdBiome(biome);
+                LOGGER.debug("Removed {} from stronghold generation", biome.getRegistryName());
+            }
+
+            if (resetVillage) {
+                resetVillage = false;
+                BiomeManager.removeVillageBiome(biome);
+                LOGGER.debug("Removed {} from village generation", biome.getRegistryName());
+            }
+        }
     }
 }

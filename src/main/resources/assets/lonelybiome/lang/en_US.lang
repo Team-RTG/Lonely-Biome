@@ -1,5 +1,8 @@
-lonelybiome.config.maintitle=LonelyBiome Configuration
+lonelybiome.config.maintitle=Lonely Biome Configuration
 lonelybiome.config.biome=Biome
-lonelybiome.config.biome.comment=The Biome to generate the world with.
-lonelybiome.config.enabled=Enabled
-lonelybiome.config.enabled.comment=Set this to false to disable LonelyBiome.
+lonelybiome.config.biome.tooltip=The registry name of the biome to generate the world with.
+lonelybiome.config.disable=Disable Lonely Biome
+lonelybiome.config.ensureStrongholds=Ensure Stronghold Generation
+lonelybiome.config.ensureStrongholds.tooltip=If this is set to true, then stronghold generation will be ensured for the single-biome world.
+lonelybiome.config.ensureVillages=Ensure Village Generation
+lonelybiome.config.ensureVillages.tooltip=If this is set to true, then village generation will be ensured for the single-biome world.
