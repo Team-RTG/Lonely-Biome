@@ -19,7 +19,7 @@ archivesBaseName = "${project.name}-${project.mc_version}"
 
 reckon {
     scopeFromProp()
-    stageFromProp("alpha", "beta", "final")
+    stageFromProp("dev", "rc", "final")
 }
 
 repositories {
