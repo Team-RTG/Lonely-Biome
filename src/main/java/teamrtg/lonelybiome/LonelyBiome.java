@@ -19,6 +19,7 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -40,7 +41,15 @@ public final class LonelyBiome
     @Mod.EventHandler
     void initPre(final FMLPreInitializationEvent event)
     {
+        // early initialisation to create the config.
         LBConfig.init(event);
+    }
+
+    @Mod.EventHandler
+    void initPost(final FMLPostInitializationEvent event)
+    {
+        // late initialisation in case mods improperly adds biome types late in the lifecycle.
+        LBConfig.postinit();
     }
 
     @Mod.EventBusSubscriber

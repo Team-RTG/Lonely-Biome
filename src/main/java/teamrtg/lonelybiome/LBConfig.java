@@ -1,7 +1,9 @@
 package teamrtg.lonelybiome;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,8 +12,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,6 +31,7 @@ import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.client.IModGuiFactory;
 import net.minecraftforge.fml.client.config.GuiConfig;
 import net.minecraftforge.fml.client.config.GuiConfigEntries;
+import net.minecraftforge.fml.client.config.GuiConfigEntries.ArrayEntry;
 import net.minecraftforge.fml.client.config.GuiConfigEntries.SelectValueEntry;
 import net.minecraftforge.fml.client.config.IConfigElement;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
@@ -42,14 +45,16 @@ public final class LBConfig
 
     private static final Logger LOGGER = LogManager.getLogger(LonelyBiome.MOD_ID+"/Config");
 
-    private static final Predicate<Biome> BIOME_FILTER = checkBiome -> Stream.of(Type.BEACH, Type.RIVER, Type.NETHER, Type.END, Type.VOID)
-                                                                             .noneMatch(type -> BiomeDictionary.hasType(checkBiome, type));
+    private static final Collection<Type> DEFAULT_BIOMETYPES  = Collections.unmodifiableCollection(Arrays.asList(Type.BEACH, Type.RIVER, Type.NETHER, Type.END, Type.VOID));
+    private static final Collection<Type> BIOMETYPE_BLACKLIST = Sets.newHashSet(DEFAULT_BIOMETYPES);
+    private static final Predicate<Biome> BIOME_FILTER        = checkBiome -> BIOMETYPE_BLACKLIST.stream().noneMatch(type -> BiomeDictionary.hasType(checkBiome, type));
 
     private static File          configFile;
     private static Configuration config;
     private static Property      configBiome;
     private static Property      configEnsureVillages;
     private static Property      configEnsureStrongholds;
+    private static Property      configBiomeTypeBlacklist;
 
     @Nullable
     private static Biome         biome;
@@ -59,8 +64,11 @@ public final class LBConfig
         if (configFile == null) {
             configFile = event.getSuggestedConfigurationFile();
         }
+    }
 
-        if (config == null) {
+    static void postinit()
+    {
+        if (configFile != null && config == null) {
             config = new Configuration(configFile);
 
             configBiome = config.get(LonelyBiome.MOD_ID, "biome", "minecraft:plains",
@@ -77,23 +85,27 @@ public final class LBConfig
                 "If this is set to true, then village generation will be ensured for the single-biome world.")
                 .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.ensureVillages"));
 
+            configBiomeTypeBlacklist = config.get(LonelyBiome.MOD_ID, "biomeTypeBlacklist", DEFAULT_BIOMETYPES.stream().map(Type::getName).toArray(String[]::new),
+                "Biomes of these types will be blacklisted from selection." + Configuration.NEW_LINE +
+                "By default, vanilla biomes of the fallowing types are blacklisted as they do not properly generate as" + Configuration.NEW_LINE +
+                "normal biomes in the Overworld by themselves, or at all: BEACH, RIVER, NETHER, END, VOID")
+                .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.biomeTypeBlacklist"))
+                .setConfigEntryClass(LBBiomeTypeEntry.class);
+
             sync();
         }
     }
 
     private static void sync()
     {
+        updateBiomeTypeBlacklist(configBiomeTypeBlacklist.getStringList());
         final String cfgbiome = configBiome.getString();
         if (!cfgbiome.isEmpty()) {
-            final ResourceLocation resLoc = new ResourceLocation(cfgbiome);
-            biome = ForgeRegistries.BIOMES.getValue(resLoc);
-            if (biome == null || BIOME_FILTER.negate().test(biome)) {
-                biome = null;
-                configBiome.set("");
-                final Collection<ResourceLocation> biomes = ForgeRegistries.BIOMES.getValuesCollection().stream().filter(BIOME_FILTER)
-                    .map(Biome::getRegistryName).filter(Objects::nonNull).sorted().collect(Collectors.toList());
-                LOGGER.error("The config biome ({}) is erroneous; setting to \"\" (disabled).", cfgbiome);
-                LOGGER.error("Possible values for biome are: {}", biomes);
+            biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(cfgbiome));
+            if (biome == null) {
+                invalidateBiome("The config biome ({}) does not exist; setting to \"\" (disabled).", cfgbiome);
+            } else if (BIOME_FILTER.negate().test(biome)) {
+                invalidateBiome("The config biome ({}) is blacklisted by type; Setting to \"\" (disabled).", cfgbiome);
             } else {
                 LOGGER.debug("Biome set to: {}", biome.getRegistryName());
             }
@@ -105,6 +117,23 @@ public final class LBConfig
         if (config.hasChanged()) {
             config.save();
         }
+    }
+
+    private static void updateBiomeTypeBlacklist(final Object[] vals)
+    {
+        BIOMETYPE_BLACKLIST.clear();
+        final Collection<String> cfgtypes = Arrays.stream(vals).map(type -> type.toString().toUpperCase()).collect(Collectors.toSet());
+        Type.getAll().stream().map(type -> type.getName().toUpperCase()).filter(cfgtypes::contains).map(Type::getType).forEach(BIOMETYPE_BLACKLIST::add);
+    }
+
+    private static void invalidateBiome(final String msg, final Object... args)
+    {
+        biome = null;
+        configBiome.set("");
+        LOGGER.error(msg, args);
+        final Collection<ResourceLocation> biomes = ForgeRegistries.BIOMES.getValuesCollection().stream().filter(BIOME_FILTER)
+            .map(Biome::getRegistryName).filter(Objects::nonNull).sorted().collect(Collectors.toList());
+        LOGGER.error("Possible values for biome are: {}", biomes);
     }
 
     @Nullable
@@ -153,18 +182,75 @@ public final class LBConfig
 
     public static class LBBiomeEntry extends SelectValueEntry
     {
+        private static LBBiomeEntry instance;
+
         public LBBiomeEntry(final GuiConfig owningScreen, final GuiConfigEntries owningEntryList, final IConfigElement prop)
         {
             super(owningScreen, owningEntryList, prop, getSelectableValues());
+            instance = this;
         }
 
         private static Map<Object, String> getSelectableValues()
         {
             Map<Object, String> ret = ForgeRegistries.BIOMES.getValuesCollection().stream()
-                .filter(BIOME_FILTER).map(IForgeRegistryEntry.Impl::getRegistryName).filter(Objects::nonNull)
+                .filter(BIOME_FILTER)
+                .map(IForgeRegistryEntry.Impl::getRegistryName)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toMap(ResourceLocation::toString, resloc -> TextFormatting.AQUA + resloc.toString() + TextFormatting.RESET, (a, b) -> b, HashMap::new));
             ret.put("", " " + TextFormatting.RED + "- " + I18n.format(LonelyBiome.MOD_ID + ".config.disable") + " -" + TextFormatting.RESET);
             return ret;
+        }
+
+        private static void update()
+        {
+            if (instance != null) {
+                instance.selectableValues = getSelectableValues();
+                if (instance.selectableValues.get(instance.currentValue) == null) {
+                    instance.currentValue = "";
+                    instance.updateValueButtonText();
+                }
+            }
+        }
+    }
+
+    public static class LBBiomeTypeEntry extends ArrayEntry
+    {
+        public LBBiomeTypeEntry(final GuiConfig owningScreen, final GuiConfigEntries owningEntryList, final IConfigElement configElement)
+        {
+            super(owningScreen, owningEntryList, configElement);
+        }
+
+        @Override
+        public void setToDefault()
+        {
+            LBConfig.updateBiomeTypeBlacklist(this.configElement.getDefaults());
+            LBBiomeEntry.update();
+            super.setToDefault();
+        }
+
+        @Override
+        public void undoChanges()
+        {
+            LBConfig.updateBiomeTypeBlacklist(this.beforeValues);
+            LBBiomeEntry.update();
+            super.undoChanges();
+        }
+
+        @Override
+        public void setListFromChildScreen(final Object[] newList)
+        {
+            LBConfig.updateBiomeTypeBlacklist(newList);
+            LBBiomeEntry.update();
+            super.setListFromChildScreen(newList);
+        }
+
+        @Override
+        public void updateValueButtonText()
+        {
+            this.btnValue.displayString = Arrays.stream(currentValues)
+                .map(o -> ", " + TextFormatting.DARK_RED + o + TextFormatting.RESET)
+                .collect(Collectors.joining())
+                .replaceFirst(", ", "");
         }
     }
 }
