@@ -65,14 +65,17 @@ public class LBSaveData extends WorldSavedData
     {
         LOGGER.debug("Deserialising LonelyBiome data from world save");
         String resloc = nbt.getString(BIOME_KEY);
-        if (!resloc.isEmpty() && (this.biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(resloc))) == null) {
-            LOGGER.error("LonelyBiome world save data is corrupted or erroneous: [{}], Stopping server to preserve the world.", resloc);
-            LOGGER.error("If the mod whose biome was used to create this world was removed, please reinstall it, or start a new world.");
-            final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-            server.getPlayerList().removeAllPlayers();
-            server.worlds = new WorldServer[0];
-            server.initiateShutdown();
-            server.stopServer();
+        if (!resloc.isEmpty()) {
+            this.biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(resloc));
+            if (biome == null) {
+                LOGGER.error("LonelyBiome world save data is corrupted or erroneous: [{}], Stopping server to preserve the world.", resloc);
+                LOGGER.error("If the mod whose biome was used to create this world was removed, please reinstall it, or start a new world.");
+                final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+                server.getPlayerList().removeAllPlayers();
+                server.worlds = new WorldServer[0];
+                server.initiateShutdown();
+                server.stopServer();
+            }
         } else {
             LOGGER.warn("LonelyBiome is disabled as per empty world save data");
             this.biome = null;// ensure biome is null
