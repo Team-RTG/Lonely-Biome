@@ -34,8 +34,10 @@ import net.minecraftforge.fml.client.config.GuiConfigEntries;
 import net.minecraftforge.fml.client.config.GuiConfigEntries.ArrayEntry;
 import net.minecraftforge.fml.client.config.GuiConfigEntries.SelectValueEntry;
 import net.minecraftforge.fml.client.config.IConfigElement;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 
@@ -74,8 +76,7 @@ public final class LBConfig
             configBiome = config.get(LonelyBiome.MOD_ID, "biome", "minecraft:plains",
                 "The registry name of the biome to generate the world with. [Example: minecraft:plains]" + Configuration.NEW_LINE +
                 "If left blank, LonelyBiome will be disabled.")
-                .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.biome"))
-                .setConfigEntryClass(LBBiomeEntry.class);
+                .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.biome"));
 
             configEnsureStrongholds = config.get(LonelyBiome.MOD_ID, "ensureStrongholds", true,
                 "If this is set to true, then stronghold generation will be ensured for the single-biome world.")
@@ -89,8 +90,12 @@ public final class LBConfig
                 "Biomes of these types will be blacklisted from selection." + Configuration.NEW_LINE +
                 "By default, vanilla biomes of the fallowing types are blacklisted as they do not properly generate as" + Configuration.NEW_LINE +
                 "normal biomes in the Overworld by themselves, or at all: BEACH, RIVER, NETHER, END, VOID")
-                .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.biomeTypeBlacklist"))
-                .setConfigEntryClass(LBBiomeTypeEntry.class);
+                .setLanguageKey(LonelyBiome.MOD_ID.concat(".config.biomeTypeBlacklist"));
+
+            if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+                configBiome.setConfigEntryClass(LBBiomeEntry.class);
+                configBiomeTypeBlacklist.setConfigEntryClass(LBBiomeTypeEntry.class);
+            }
 
             sync();
         }
